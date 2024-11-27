@@ -131,6 +131,7 @@ $RECYCLE.BIN/
 .DS_Store
 
 _NCrunch*
-/bin/
-/.idea/
-/obj/
+
+/bin/**
+/.idea/**
+/obj/**

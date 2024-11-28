@@ -35,6 +35,9 @@ public class MetaExchangeService : IMetaExchangeService
     
     public List<ExecutionResponse> CalculateExecutionPlan(ExecutionRequest request)
     {
+        //TMP
+        PreloadDataAsync();
+        
         if (request.Amount <= 0)
         {
             throw new ArgumentException("Invalid request amount. Amount must be greater than 0.", nameof(request.Amount));
@@ -42,8 +45,8 @@ public class MetaExchangeService : IMetaExchangeService
         
         var ordersToExecute = request.OrderType switch
         {
-            "buy" => GetBestExecutionPlan(request.Amount, _askBookOrders, _cryptoExchangeBalanceBtc),
-            "sell" => GetBestExecutionPlan(request.Amount, _bidBookOrders, _cryptoExchangeBalanceEur),
+            "buy" => GetBestExecutionPlan(request, _askBookOrders, _cryptoExchangeBalanceBtc),
+            "sell" => GetBestExecutionPlan(request, _bidBookOrders, _cryptoExchangeBalanceEur),
             _ => throw new ArgumentException("Unknown order type", nameof(request.OrderType))
         };
 
@@ -51,9 +54,10 @@ public class MetaExchangeService : IMetaExchangeService
     }
 
 
-    public List<ExecutionResponse> GetBestExecutionPlan(decimal requestedAmount, PriorityQueue<Order, decimal> sortedBookOrders, Dictionary<long, decimal> cryptoExchangeBalance)
+    public List<ExecutionResponse> GetBestExecutionPlan(ExecutionRequest request, PriorityQueue<Order, decimal> sortedBookOrders, Dictionary<long, decimal> cryptoExchangeBalance)
     {
         var ordersToExecute = new List<ExecutionResponse>();
+        var requestedAmount = request.Amount;
         while (requestedAmount > 0)
         {
             if (sortedBookOrders.Count == 0)
@@ -101,7 +105,7 @@ public class MetaExchangeService : IMetaExchangeService
             var res = new ExecutionResponse
             {
                 ExchangeId = bestOrder.ExchangeId.Value,
-                OrderType = bestOrder.Type,
+                OrderType = request.OrderType,
                 Amount = amountToExecute,
                 Price = bestOrder.Price
             };

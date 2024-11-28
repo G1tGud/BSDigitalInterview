@@ -1,19 +1,20 @@
 ﻿using System.Text.Json;
 using ConsoleApp;
+using ConsoleApp.Data;
 using ConsoleApp.Models;
 using ConsoleApp.Services;
 
 //read data
-var bookOrders = BookOrderService.GetBookOrders();
+var cryptoExchanges = CryptoExchangeData.GetCryptoExchangeData();
 var request = new ExecutionRequest
 {
     OrderType = "sell",
-    Amount = 20
+    Amount = 2
 };
 
 
 //calculate best orders
-var result = MetaExchangeService.CalculateExecutionPlan(request, bookOrders);
+var result = MetaExchangeService.CalculateExecutionPlan(request, cryptoExchanges);
 
 
 //print

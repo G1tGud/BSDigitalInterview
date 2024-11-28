@@ -20,7 +20,7 @@ public class Ask
 public class Order
 {
     public long? Id { get; set; }
-    public long? ExchangeIndex { get; set; } //this is the index of the book order
+    public long? ExchangeId { get; set; }
     public DateTime Time { get; set; }
     public string Type { get; set; }
     public string Kind { get; set; }

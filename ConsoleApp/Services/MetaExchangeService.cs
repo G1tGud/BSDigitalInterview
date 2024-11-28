@@ -6,18 +6,21 @@ namespace ConsoleApp.Services;
 public class MetaExchangeService
 {
 
-    public static List<ExecutionResponse> CalculateExecutionPlan(ExecutionRequest request, List<BookOrder> bookOrders)
+    public static List<ExecutionResponse> CalculateExecutionPlan(ExecutionRequest request, List<CryptoExchange> exchanges)
     {
         //sort book orders
         PriorityQueue<Order, decimal> sortedBookOrders;
+        Dictionary<long, decimal> cryptoExchangeBalance;
         switch (request.OrderType)
         {
             case "buy":
-                var askOrder = BookOrderMapper.GetAskOrdersWithExchangeId(bookOrders).ToList();
+                var askOrder = BookOrderMapper.GetAskOrdersWithExchangeId(exchanges).ToList();
+                cryptoExchangeBalance = exchanges.ToDictionary(x => x.ExchangeId, x => x.Balance.Btc);
                 sortedBookOrders = GetSortedOrders(askOrder, "asc");
                 break;
             case "sell":
-                var bidOrder = BookOrderMapper.GetBidOrdersWithExchangeId(bookOrders).ToList();
+                var bidOrder = BookOrderMapper.GetBidOrdersWithExchangeId(exchanges).ToList();
+                cryptoExchangeBalance = exchanges.ToDictionary(x => x.ExchangeId, x => x.Balance.Eur);
                 sortedBookOrders = GetSortedOrders(bidOrder, "desc");
                 break;
             default:
@@ -25,30 +28,70 @@ public class MetaExchangeService
         }
 
         //get the best execution plan
-        var requestedAmount = request.Amount;
+        var ordersToExecute = GetBestExecutionPlan(request.Amount, sortedBookOrders, cryptoExchangeBalance);
+
+        return ordersToExecute;
+    }
+
+
+    public static List<ExecutionResponse> GetBestExecutionPlan(decimal requestedAmount, PriorityQueue<Order, decimal> sortedBookOrders, 
+        Dictionary<long, decimal> cryptoExchangeBalance)
+    {
         var ordersToExecute = new List<ExecutionResponse>();
-        while (sortedBookOrders.Count > 0 && requestedAmount > 0)
+        while (requestedAmount > 0)
         {
+            if (sortedBookOrders.Count == 0)
+            {
+                Console.WriteLine("Error: Book order is empty.");
+                return null;
+            }
+
+            if (cryptoExchangeBalance.Count == 0)
+            {
+                Console.WriteLine("Error: Crypto exchanges are out of balance.");
+                return null;
+            }
+            
+            
             var bestOrder = sortedBookOrders.Dequeue();
-            if (!bestOrder.ExchangeIndex.HasValue)
+            if (!bestOrder.ExchangeId.HasValue)
             {
                 //log error and continue
-                Console.WriteLine($"Missing exchange index order {bestOrder.Id}.");
+                Console.WriteLine($"Error: Missing exchange id {bestOrder.ExchangeId}.");
                 continue;
             }
 
             var amountToExecute = Math.Min(requestedAmount, bestOrder.Amount);
+            if (!cryptoExchangeBalance.TryGetValue(bestOrder.ExchangeId.Value, out var exchangeBalance))
+            {
+                //Console.WriteLine($"Error: Missing exchange balance for exchange with id {bestOrder.ExchangeId}.");
+                continue;
+            }
+            
+            //exchange has no more balance
+            if (exchangeBalance == 0)
+            {
+                Console.WriteLine($"Error: Crypto exchange with id {bestOrder.ExchangeId} is out of balance.");
+                cryptoExchangeBalance.Remove(bestOrder.ExchangeId.Value);
+                continue;
+            }
+
+            // we can only buy as much as exchange has balance
+            amountToExecute = Math.Min(amountToExecute, exchangeBalance); 
+            
+            //lower balance
+            cryptoExchangeBalance[bestOrder.ExchangeId.Value] -= amountToExecute;
+            requestedAmount -= amountToExecute;
+            
+            //add order to execute
             var res = new ExecutionResponse
             {
-                ExchangeIndex = bestOrder.ExchangeIndex.Value,
+                ExchangeIndex = bestOrder.ExchangeId.Value,
                 OrderType = bestOrder.Type,
                 Amount = amountToExecute,
                 Price = bestOrder.Price
             };
             ordersToExecute.Add(res);
-            
-
-            requestedAmount -= amountToExecute;
         }
 
         return ordersToExecute;

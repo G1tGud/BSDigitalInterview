@@ -5,23 +5,23 @@ namespace ConsoleApp.Mappers;
 public class BookOrderMapper
 {
 
-    public static IEnumerable<Order> GetAskOrdersWithExchangeId(List<BookOrder> bookOrders)
+    public static IEnumerable<Order> GetAskOrdersWithExchangeId(List<CryptoExchange> exchanges)
     {
-        return bookOrders.SelectMany((bookOrder, index) => bookOrder.Asks.Select(
+        return exchanges.SelectMany(exchange => exchange.BookOrder.Asks.Select(
             x =>
             {
-                x.Order.ExchangeIndex = index;
+                x.Order.ExchangeId = exchange.ExchangeId;
                 return x.Order;
             })
         );
     }
     
-    public static IEnumerable<Order> GetBidOrdersWithExchangeId(List<BookOrder> bookOrders)
+    public static IEnumerable<Order> GetBidOrdersWithExchangeId(List<CryptoExchange> exchanges)
     {
-        return bookOrders.SelectMany((bookOrder, index) => bookOrder.Bids.Select(
+        return exchanges.SelectMany(exchange => exchange.BookOrder.Bids.Select(
             x =>
             {
-                x.Order.ExchangeIndex = index;
+                x.Order.ExchangeId = exchange.ExchangeId;
                 return x.Order;
             })
         );

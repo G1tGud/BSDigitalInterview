@@ -86,7 +86,7 @@ public class MetaExchangeService
             //add order to execute
             var res = new ExecutionResponse
             {
-                ExchangeIndex = bestOrder.ExchangeId.Value,
+                ExchangeId = bestOrder.ExchangeId.Value,
                 OrderType = bestOrder.Type,
                 Amount = amountToExecute,
                 Price = bestOrder.Price

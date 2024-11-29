@@ -16,7 +16,6 @@ builder.Services.AddCors(options => {
 */
 
 // Add services to the container.
-builder.Services.AddHostedService<DataPreloadingService>();
 builder.Services.AddSingleton<IMetaExchangeService, MetaExchangeService>();
 
 builder.Services.AddControllers();

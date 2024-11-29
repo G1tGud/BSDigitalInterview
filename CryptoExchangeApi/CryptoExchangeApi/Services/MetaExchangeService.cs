@@ -6,38 +6,19 @@ namespace CryptoExchangeApi.Services;
 
 public class MetaExchangeService : IMetaExchangeService
 {
-    private Dictionary<long, decimal> _cryptoExchangeBalanceEur;
-    private Dictionary<long, decimal> _cryptoExchangeBalanceBtc;
-    private PriorityQueue<Order, decimal> _askBookOrders;
-    private PriorityQueue<Order, decimal> _bidBookOrders;
+    private readonly ICryptoExchangeDataProvider _cryptoExchangeDataProvider;
     private readonly ILogger<MetaExchangeService> _logger;
 
-    public MetaExchangeService(ILogger<MetaExchangeService> logger)
+    public MetaExchangeService(ICryptoExchangeDataProvider cryptoExchangeDataProvider, ILoggerFactory loggerFactory)
     {
-        _logger = logger;
+        _cryptoExchangeDataProvider = cryptoExchangeDataProvider;
+        _logger = loggerFactory.CreateLogger<MetaExchangeService>();
     }
-
-    public Task PreloadDataAsync()
-    {
-        var exchanges = CryptoExchangeData.GetCryptoExchangeData();
-        _cryptoExchangeBalanceEur = exchanges.ToDictionary(x => x.ExchangeId, x => x.Balance.Eur);
-        _cryptoExchangeBalanceBtc = exchanges.ToDictionary(x => x.ExchangeId, x => x.Balance.Btc);
-        
-        var askOrder = BookOrderMapper.GetAskOrdersWithExchangeId(exchanges).ToList();
-        _askBookOrders = GetSortedOrders(askOrder, "asc");
-        
-        var bidOrder = BookOrderMapper.GetBidOrdersWithExchangeId(exchanges).ToList();
-        _bidBookOrders = GetSortedOrders(bidOrder, "desc");
-        
-        return Task.CompletedTask;
-    }
+    
     
     
     public List<ExecutionResponse> CalculateExecutionPlan(ExecutionRequest request)
     {
-        //TMP
-        PreloadDataAsync();
-        
         if (request.Amount <= 0)
         {
             throw new ArgumentException("Invalid request amount. Amount must be greater than 0.", nameof(request.Amount));
@@ -45,8 +26,8 @@ public class MetaExchangeService : IMetaExchangeService
         
         var ordersToExecute = request.OrderType switch
         {
-            "buy" => GetBestExecutionPlan(request, _askBookOrders, _cryptoExchangeBalanceBtc),
-            "sell" => GetBestExecutionPlan(request, _bidBookOrders, _cryptoExchangeBalanceEur),
+            "buy" => GetBestExecutionPlan(request, _cryptoExchangeDataProvider.GetAskBookOrders(), _cryptoExchangeDataProvider.GetCryptoExchangeBalanceBtc()),
+            "sell" => GetBestExecutionPlan(request, _cryptoExchangeDataProvider.GetBidBookOrders(), _cryptoExchangeDataProvider.GetCryptoExchangeBalanceEur()),
             _ => throw new ArgumentException("Unknown order type", nameof(request.OrderType))
         };
 
@@ -113,32 +94,6 @@ public class MetaExchangeService : IMetaExchangeService
         }
 
         return ordersToExecute;
-    }
-
-
-    public static PriorityQueue<Order, decimal> GetSortedOrders(List<Order> orders, string sortDirection)
-    {
-        var sortedOrders = sortDirection switch
-        {
-            "asc" => new PriorityQueue<Order, decimal>(orders.Count),
-            "desc" => new PriorityQueue<Order, decimal>(orders.Count, new MaxQueueComparer()),
-            _ => throw new ArgumentException("Unsupported sorting direction", nameof(sortDirection))
-        };
-
-        foreach (var order in orders)
-        {
-            sortedOrders.Enqueue(order, order.Price);
-        }
-        
-        return sortedOrders;
-    }
-    
-    public class MaxQueueComparer : IComparer<decimal>
-    {
-        public int Compare(decimal x, decimal y)
-        {
-            return y.CompareTo(x);
-        }
     }
     
 }

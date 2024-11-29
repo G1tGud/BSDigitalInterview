@@ -17,7 +17,7 @@ public class Ask
     public Order Order { get; set; }
 }
 
-public class Order
+public record Order
 {
     public long? Id { get; set; }
     public long? ExchangeId { get; set; }

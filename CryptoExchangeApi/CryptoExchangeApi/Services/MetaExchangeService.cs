@@ -43,13 +43,13 @@ public class MetaExchangeService : IMetaExchangeService
             if (sortedBookOrders.Count == 0)
             {
                 _logger.LogError("Book order is empty.");
-                return null;
+                throw new ApplicationException("Book order is empty.");
             }
 
             if (cryptoExchangeBalance.Count == 0)
             {
                 _logger.LogError("Crypto exchanges are out of balance.");
-                return null;
+                throw new ApplicationException("Crypto exchanges are out of balance.");
             }
             
             var bestOrder = sortedBookOrders.Dequeue();

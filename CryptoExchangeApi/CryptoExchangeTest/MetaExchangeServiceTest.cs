@@ -89,8 +89,8 @@ public class MetaExchangeServiceTest
             Amount = 1
         };
 
-        var res = exchangeService.CalculateExecutionPlan(request);
-        Assert.Null(res);
+        var exception = Assert.Throws<ApplicationException>(() => exchangeService.CalculateExecutionPlan(request));
+        Assert.Equal("Book order is empty.", exception.Message);
     }
     
     
@@ -128,8 +128,8 @@ public class MetaExchangeServiceTest
         var cryptoExchangeDataProvider = new CryptoExchangeDataProvider(mockCryptoExchangeRepository.Object);
         var exchangeService = new MetaExchangeService(cryptoExchangeDataProvider, new NullLoggerFactory());
         
-        var res = exchangeService.CalculateExecutionPlan(request);
-        Assert.Null(res);
+        var exception = Assert.Throws<ApplicationException>(() => exchangeService.CalculateExecutionPlan(request));
+        Assert.Equal("Crypto exchanges are out of balance.", exception.Message);
     }
 
     

@@ -1,6 +1,10 @@
 @CryptoExchangeApi_HostAddress = http://localhost:8080
 
-GET {{CryptoExchangeApi_HostAddress}}/CryptoExchange/orders/executionPlan?OrderType=sell&Amount=5
+GET {{CryptoExchangeApi_HostAddress}}/CryptoExchange/orders/executionPlan?OrderType=sell&Amount=15
+Accept: application/json
+
+###
+GET {{CryptoExchangeApi_HostAddress}}/CryptoExchange/orders/executionPlan?OrderType=buy&Amount=10
 Accept: application/json
 
 ### 5261

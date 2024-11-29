@@ -135,7 +135,7 @@ public class MetaExchangeServiceTest
     
     [Theory]
     [MemberData(nameof(TestResult))]
-    public void ShouldReturnNullIfCryptoBalanceIsZero(ExecutionRequest request, List<ExecutionResponse> expected)
+    public void ShouldCalculateTheExpectedPlan(ExecutionRequest request, List<ExecutionResponse> expected)
     {
         var mockCryptoExchangeRepository = new Mock<ICryptoExchangeRepository>();
         mockCryptoExchangeRepository.Setup(x => x.GetCryptoExchangeData()).Returns(TestData);
@@ -145,6 +145,10 @@ public class MetaExchangeServiceTest
         var res = exchangeService.CalculateExecutionPlan(request);
         
         Assert.Equivalent(expected, res);
+        
+        //sum should be equal to requested amount
+        var sum = res.Sum(x => x.Amount);
+        Assert.Equal(request.Amount, sum);
     }
     
     

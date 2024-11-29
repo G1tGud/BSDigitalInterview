@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using ConsoleApp;
 using ConsoleApp.Data;
 using ConsoleApp.Models;
 using ConsoleApp.Services;
@@ -9,7 +8,7 @@ var cryptoExchanges = CryptoExchangeData.GetCryptoExchangeData();
 var request = new ExecutionRequest
 {
     OrderType = "sell",
-    Amount = 2
+    Amount = 10
 };
 
 

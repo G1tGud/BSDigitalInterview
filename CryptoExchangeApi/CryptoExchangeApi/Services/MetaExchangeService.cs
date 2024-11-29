@@ -1,5 +1,4 @@
 using CryptoExchangeApi.Data;
-using CryptoExchangeApi.Mappers;
 using CryptoExchangeApi.Models;
 
 namespace CryptoExchangeApi.Services;
@@ -56,7 +55,7 @@ public class MetaExchangeService : IMetaExchangeService
             var bestOrder = sortedBookOrders.Dequeue();
             if (!bestOrder.ExchangeId.HasValue)
             {
-                _logger.LogError("Missing exchange {Id}.", bestOrder.ExchangeId);
+                _logger.LogError("Missing exchange with id {Id}.", bestOrder.ExchangeId);
                 continue;
             }
 
@@ -70,7 +69,7 @@ public class MetaExchangeService : IMetaExchangeService
             //exchange has no more balance
             if (exchangeBalance == 0)
             {
-                _logger.LogError("Error: Crypto exchange with {Id} is out of balance.", bestOrder.ExchangeId);
+                _logger.LogError("Error: Crypto exchange with id {Id} is out of balance.", bestOrder.ExchangeId);
                 cryptoExchangeBalance.Remove(bestOrder.ExchangeId.Value);
                 continue;
             }

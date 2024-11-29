@@ -14,7 +14,7 @@ public class CryptoExchangeRepository : ICryptoExchangeRepository
                 ExchangeId = 1,
                 Balance = new CryptoExchangeBalance
                 {
-                    Eur = 4,
+                    Eur = 20,
                     Btc = 12
                 },
                 BookOrder = JsonSerializer.Deserialize<BookOrder>(BookOrdersRaw1)
@@ -25,7 +25,7 @@ public class CryptoExchangeRepository : ICryptoExchangeRepository
                 Balance = new CryptoExchangeBalance
                 {
                     Eur = 15,
-                    Btc = 2
+                    Btc = 10
                 },
                 BookOrder = JsonSerializer.Deserialize<BookOrder>(BookOrdersRaw2)
             },

@@ -2,11 +2,10 @@
 using CryptoExchangeApi.Data;
 using CryptoExchangeApi.Models;
 using CryptoExchangeApi.Services;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
-namespace TestCryptoExchange;
+namespace CryptoExchangeTest;
 
 public class MetaExchangeServiceTest
 {
